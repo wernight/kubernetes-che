@@ -1,0 +1,419 @@
+# Ingress Controller LoadBalancer.
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-ingress
+spec:
+  type: LoadBalancer
+  # You can select a static IP for your Ingress controller so your can use DNS.
+  #loadBalancerIP: 10.10.10.10
+  ports:
+    - port: 80
+      name: http
+    - port: 443
+      name: https
+  selector:
+    name: nginx-ingress-controller
+---
+# Nginx Ingress Controller
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: nginx-ingress-controller
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: nginx-ingress-controller
+    spec:
+      terminationGracePeriodSeconds: 60
+      containers:
+        - name: nginx-ingress-controller
+          image: gcr.io/google_containers/nginx-ingress-controller:0.8.3
+          imagePullPolicy: Always
+          args:
+            - /nginx-ingress-controller
+            # Ingress controller redirects here for any unknown subdomain, that service should:
+            # - Serve a HTTP/404 on /
+            # - Serve a HTTP/200 on /healthz
+            - --default-backend-service=default/default-http-backend
+          # Use downward API
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          ports:
+            - containerPort: 80
+            - containerPort: 443
+            # (Optional) Expose 18080 to access Nginx stats in url /nginx-status:
+            #- containerPort: 18080
+          volumeMounts:
+            - name: tls-dhparam-vol
+              mountPath: /etc/nginx-ssl/dhparam
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 10254
+              scheme: HTTP
+            initialDelaySeconds: 30
+            timeoutSeconds: 5
+          resources:
+            requests:
+              cpu: 5m
+              memory: "100Mi"
+            limits:
+              memory: "500Mi"
+      volumes:
+        - name: tls-dhparam-vol
+          secret:
+            secretName: ingress-tls-dhparam
+---
+# Retrieves and updates TLS certificates from LetsEncrypt.org (ACME provider).
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: kube-lego
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: kube-lego
+        # Required for auto-created kube-lego-nginx service to work.
+        app: kube-lego
+    spec:
+      containers:
+        - name: kube-lego
+          image: jetstack/kube-lego:0.1.2
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          env:
+            - name: LEGO_EMAIL
+              # TODO: Put your e-mail here.
+              value: example@example.com
+            - name: LEGO_URL
+              # Use Let's Encrypt production API URL (instead of default staging environment):
+              value: "https://acme-v01.api.letsencrypt.org/directory"
+            - name: LEGO_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: LEGO_POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 5
+            timeoutSeconds: 1
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 5
+            timeoutSeconds: 1
+          resources:
+            requests:
+              cpu: 5m
+              memory: "10Mi"
+            limits:
+              cpu: 50m
+              memory: "100Mi"
+---
+# Default web server if no Ingress rule applies.
+apiVersion: v1
+kind: Service
+metadata:
+  name: default-http-backend
+spec:
+  ports:
+    - port: 80
+      targetPort: 8080
+  selector:
+    name: default-http-backend
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: default-http-backend
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: default-http-backend
+    spec:
+      terminationGracePeriodSeconds: 60
+      containers:
+        - name: default-http-backend
+          image: gcr.io/google_containers/defaultbackend:1.0
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 30
+            timeoutSeconds: 5
+          ports:
+            - containerPort: 8080
+          resources:
+            limits:
+              cpu: 10m
+              memory: 20Mi
+            requests:
+              cpu: 10m
+              memory: 20Mi
+          volumeMounts:
+            # Security hack, see https://github.com/kubernetes/kubernetes/issues/16779
+            - name: no-service-account
+              mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+              readOnly: true
+      volumes:
+        - name: no-service-account
+          emptyDir: {}
+---
+# We only need this Ingress rule to generate a TLS certificate.
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: che-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    kubernetes.io/tls-acme: "true"
+spec:
+  tls:
+    - secretName: che-tls-certificate
+      hosts:
+          # TODO: Put your hostname
+        - che.example.com
+  rules:
+      # TODO: Put your hostname
+    - host: che.example.com
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spdyproxy
+spec:
+  type: LoadBalancer
+  # Should be the same IP as the Ingress controller.
+  # loadBalancerIP: 10.10.10.10
+  ports:
+    - port: 44300
+  selector:
+    name: spdyproxy
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: spdyproxy
+spec:
+  replicas: 1
+  # Pod template (contains same fields as a normal Pod)
+  template:
+    metadata:
+      labels:
+        name: spdyproxy
+    spec:
+      containers:
+        - name: spdyproxy
+          image: wernight/spdyproxy
+          imagePullPolicy: Always
+          args:
+            - --key=/var/run/secrets/tls/tls.key
+            - --cert=/var/run/secrets/tls/tls.crt
+            # TODO: Set authentication.
+            #- --user=MY_USERNAME
+            #- --pass=MY_PASSWORD
+            - --verbose
+          ports:
+            - containerPort: 44300
+          readinessProbe:
+            tcpSocket:
+              port: 44300
+          livenessProbe:
+            tcpSocket:
+              port: 44300
+            initialDelaySeconds: 60
+          resources:
+            requests:
+              cpu: 5m
+              memory: "10Mi"
+            limits:
+              memory: "100Mi"
+          volumeMounts:
+            - name: tls-vol
+              mountPath: /var/run/secrets/tls
+              readOnly: true
+              # Security hack, see https://github.com/kubernetes/kubernetes/issues/16779
+            - name: no-service-account
+              mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+              readOnly: true
+      volumes:
+        - name: tls-vol
+          secret:
+            secretName: che-tls-certificate
+        - name: no-service-account
+          emptyDir: {}
+---
+# TODO: Ideally we'd want to resolve "che" to the Pod directly which would about to list ports.
+apiVersion: v1
+kind: Service
+metadata:
+  name: che
+spec:
+  ports:
+    - port: 80
+      targetPort: 8080
+      name: http
+    - port: 32768
+      name: ws-agent-32768
+    - port: 32769
+      name: ws-agent-32769
+    - port: 32770
+      name: ws-agent-32770
+    - port: 32771
+      name: ws-agent-32771
+    - port: 32772
+      name: ws-agent-32772
+    - port: 32773
+      name: ws-agent-32773
+    - port: 32774
+      name: ws-agent-32774
+    - port: 32775
+      name: ws-agent-32775
+    - port: 32776
+      name: ws-agent-32776
+    - port: 32777
+      name: ws-agent-32777
+    - port: 32778
+      name: ws-agent-32778
+    - port: 32779
+      name: ws-agent-32779
+    - port: 32780
+      name: ws-agent-32780
+    - port: 32781
+      name: ws-agent-32781
+    - port: 32782
+      name: ws-agent-32782
+    - port: 32783
+      name: ws-agent-32783
+    - port: 32784
+      name: ws-agent-32784
+    - port: 32785
+      name: ws-agent-32785
+    - port: 32786
+      name: ws-agent-32786
+    - port: 32787
+      name: ws-agent-32787
+    - port: 32788
+      name: ws-agent-32788
+    - port: 32789
+      name: ws-agent-32789
+      # ... 65535
+  selector:
+    name: che
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: che
+spec:
+  replicas: 1
+  # Pod template (contains same fields as a normal Pod)
+  template:
+    metadata:
+      labels:
+        name: che
+    spec:
+      # Resolve "che" to localhost on these containers.
+      hostname: che
+      containers:
+          # https://eclipse-che.readme.io/docs/usage-docker
+        - name: che-server
+          image: codenvy/che-server
+          args:
+            - --remote:che
+            - -s:uid
+            - -s:client
+            - run
+          env:
+            - name: DOCKER_HOST
+              value: tcp://localhost:2375
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /dashboard/
+              port: 8080
+          livenessProbe:
+            httpGet:
+              path: /dashboard/
+              port: 8080
+            initialDelaySeconds: 60
+          resources:
+            requests:
+              cpu: 5m
+              memory: "50Mi"
+            limits:
+              memory: "2Gi"
+          securityContext:
+            runAsUser: 0  # root
+          volumeMounts:
+            - name: lib-vol
+              mountPath: /home/user/che/lib-copy
+            - name: workspaces-vol
+              mountPath: /home/user/che/workspaces
+            - name: storage-vol
+              mountPath: /home/user/che/storage
+              # Security hack, see https://github.com/kubernetes/kubernetes/issues/16779
+            - name: no-service-account
+              mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+              readOnly: true
+        - name: docker-dind
+          image: docker:dind
+          imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: 5m
+              memory: "100Mi"
+            limits:
+              cpu: 700m
+              memory: "2.0Gi"
+          securityContext:
+            privileged: true
+          readinessProbe:
+            exec:
+              command: ["docker", "info"]
+          livenessProbe:
+            exec:
+              command: ["docker", "info"]
+            periodSeconds: 30
+          volumeMounts:
+            - name: lib-vol
+              mountPath: /home/user/che/lib
+            - name: workspaces-vol
+              mountPath: /home/user/che/workspaces
+            - name: storage-vol
+              mountPath: /home/user/che/storage
+      volumes:
+        - name: lib-vol
+          hostPath:
+            path: /home/user/che/lib
+        - name: workspaces-vol
+          hostPath:
+            path: /home/user/che/workspaces
+        - name: storage-vol
+          hostPath:
+            path: /home/user/che/storage
+        - name: no-service-account
+          emptyDir: {}
