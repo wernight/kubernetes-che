@@ -407,13 +407,12 @@ spec:
               mountPath: /home/user/che/storage
       volumes:
         - name: lib-vol
-          hostPath:
-            path: /home/user/che/lib
+          emptyDir: {}
         - name: workspaces-vol
-          hostPath:
-            path: /home/user/che/workspaces
+        # TODO: You may want to use persistent disk instead.
+          emptyDir: {}
         - name: storage-vol
-          hostPath:
-            path: /home/user/che/storage
+        # TODO: You may want to use persistent disk instead.
+          emptyDir: {}
         - name: no-service-account
           emptyDir: {}
