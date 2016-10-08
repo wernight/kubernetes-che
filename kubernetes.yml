@@ -366,8 +366,6 @@ spec:
               memory: "50Mi"
             limits:
               memory: "2Gi"
-          securityContext:
-            runAsUser: 0  # root
           volumeMounts:
             - name: lib-vol
               mountPath: /home/user/che/lib-copy
