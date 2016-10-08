@@ -405,14 +405,19 @@ spec:
               mountPath: /home/user/che/workspaces
             - name: storage-vol
               mountPath: /home/user/che/storage
+            - name: docker-vol
+              mountPath: /var/lib/docker
       volumes:
         - name: lib-vol
           emptyDir: {}
         - name: workspaces-vol
-        # TODO: You may want to use persistent disk instead.
+          # TODO: You may want to use persistent disk instead.
           emptyDir: {}
         - name: storage-vol
-        # TODO: You may want to use persistent disk instead.
+          # TODO: You may want to use persistent disk instead.
+          emptyDir: {}
+        - name: docker-vol
+          # TODO: You may want to use persistent disk instead to preserve Docker images cache.
           emptyDir: {}
         - name: no-service-account
           emptyDir: {}
