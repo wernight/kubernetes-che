@@ -407,6 +407,10 @@ spec:
               mountPath: /home/user/che/storage
             - name: docker-vol
               mountPath: /var/lib/docker
+              # Security hack, see https://github.com/kubernetes/kubernetes/issues/16779
+            - name: no-service-account
+              mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+              readOnly: true
       volumes:
         - name: lib-vol
           emptyDir: {}
