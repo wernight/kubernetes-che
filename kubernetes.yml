@@ -337,6 +337,7 @@ spec:
     spec:
       # Resolve "che" to localhost on these containers.
       hostname: che
+      terminationGracePeriodSeconds: 60
       containers:
           # https://eclipse-che.readme.io/docs/usage-docker
         - name: che-server
@@ -360,11 +361,17 @@ spec:
               path: /dashboard/
               port: 8080
             initialDelaySeconds: 60
+          lifecycle:
+            preStop:
+              exec:
+                # See https://github.com/eclipse/che-dockerfiles/blob/master/che-launcher/launcher_cmds.sh
+                command: ["/home/user/che/bin/che.sh", "-c", "-s:uid", "stop"]
           resources:
             requests:
               cpu: 5m
               memory: "50Mi"
             limits:
+              # TODO: Remove or adjust to whatever you feel should be max.
               memory: "2Gi"
           volumeMounts:
             - name: lib-vol
@@ -385,6 +392,7 @@ spec:
               cpu: 5m
               memory: "100Mi"
             limits:
+              # TODO: Remove or adjust to whatever you feel should be max.
               cpu: 700m
               memory: "2.0Gi"
           securityContext:
