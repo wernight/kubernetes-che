@@ -404,6 +404,11 @@ spec:
             exec:
               command: ["docker", "info"]
             periodSeconds: 30
+          lifecycle:
+            preStop:
+              exec:
+                # Wait a little so that Che server can gracefully exit.
+                command: ["sleep", "15"]
           volumeMounts:
             - name: lib-vol
               mountPath: /home/user/che/lib
