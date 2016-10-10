@@ -65,7 +65,5 @@ Not everything is blue.
     One way would be to delete the `che` Service, and instead of using a Deployment, directly create a Pod
     named `che` (but I don't like that idea). Another idea is just to wait for issue [#1560](https://github.com/eclipse/che/issues/1560).
   * **No persistence**. Some directories should probably be persisted; didn't check yet which and how. Probably simply
-    need to persist the workspace.
+    need to persist the workspace (see TODO in `kubernetes.yml` to have some hints to add it).
   * Doesn't scale much.
-  * Currently running `che-server` as root. It's probably avoidable.
-  * Setup could probably be simplified still.
