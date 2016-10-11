@@ -59,11 +59,7 @@ synchronize file changes and other things.
 What isn't working
 ------------------
 
-Not everything is blue.
-
-  * Currently only **listing some ports**. All ports in range 32768-65535 should point to the Pod running `docker:dind`.
-    One way would be to delete the `che` Service, and instead of using a Deployment, directly create a Pod
-    named `che` (but I don't like that idea). Another idea is just to wait for issue [#1560](https://github.com/eclipse/che/issues/1560).
-  * **No persistence**. Some directories should probably be persisted; didn't check yet which and how. Probably simply
-    need to persist the workspace (see TODO in `kubernetes.yml` to have some hints to add it).
-  * Doesn't scale much.
+ * Requires clients to setup and use that SPDY Proxy (at least until [#1560](https://github.com/eclipse/che/issues/1560) is fixed)
+ * Currently only **listing some ports**: All ports in range 32768-65535 should point to the Pod running `docker:dind`.
+   One way would be to delete the `che` Service, and instead of using a Deployment, directly create a Pod
+   named `che` (but I don't like that idea). Another idea is just to wait for issue [#1560](https://github.com/eclipse/che/issues/1560).
