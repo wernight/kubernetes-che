@@ -56,8 +56,8 @@ It's also necessary to mount some directories on both: docker and che-server. Th
 synchronize file changes and other things.
 
 
-What isn't working
-------------------
+What could be improved
+----------------------
 
  * Requires clients to setup and use that SPDY Proxy (at least until [#1560](https://github.com/eclipse/che/issues/1560) is fixed)
  * Currently only **listing some ports**: All ports in range 32768-65535 should point to the Pod running `docker:dind`.
