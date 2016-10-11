@@ -1,7 +1,7 @@
 kubernetes-che
 ==============
 
-Example deploying Eclipse Che on a Kubernetes cluster.
+Example deploying **[Eclipse Che](https://github.com/eclipse/che/)** on a [Kubernetes](http://kubernetes.io/) cluster.
 So what you get is a Che server running on your cluster behind authencation and encryption.
 
 Note: Currently alpha state; barely tested.
