@@ -275,6 +275,8 @@ spec:
     - port: 80
       targetPort: 8080
       name: http
+    - port: 2375
+      name: docker
       # Hack workaround https://github.com/eclipse/che/issues/1560
     - port: 32768
       name: ws-agent-32768
@@ -390,7 +392,7 @@ spec:
             - run
           env:
             - name: DOCKER_HOST
-              value: tcp://localhost:2375
+              value: tcp://che:2375
             # TODO: You can set CHE_WORKSPACE_STORAGE to /home/user/che/storage
             # so that /home/user/che/workspaces would be persisted under storage and
             # you only have to persist a single directory.
