@@ -415,10 +415,9 @@ spec:
           resources:
             requests:
               cpu: 5m
-              memory: "50Mi"
+              memory: "300Mi"
             limits:
-              # TODO: Remove or adjust to whatever you feel should be max.
-              memory: "2Gi"
+              memory: "1.0Gi"
           volumeMounts:
             - name: lib-vol
               mountPath: /home/user/che/lib-copy
@@ -436,11 +435,11 @@ spec:
           resources:
             requests:
               cpu: 5m
-              memory: "100Mi"
+              memory: "1.0Gi"
             limits:
               # TODO: Remove or adjust to whatever you feel should be max.
               cpu: 700m
-              memory: "2.0Gi"
+              memory: "3.0Gi"
           securityContext:
             privileged: true
           readinessProbe:
