@@ -275,6 +275,7 @@ spec:
     - port: 80
       targetPort: 8080
       name: http
+      # Hack workaround https://github.com/eclipse/che/issues/1560
     - port: 32768
       name: ws-agent-32768
     - port: 32769
@@ -319,6 +320,46 @@ spec:
       name: ws-agent-32788
     - port: 32789
       name: ws-agent-32789
+    - port: 32790
+      name: ws-agent-32790
+    - port: 32791
+      name: ws-agent-32791
+    - port: 32792
+      name: ws-agent-32792
+    - port: 32793
+      name: ws-agent-32793
+    - port: 32794
+      name: ws-agent-32794
+    - port: 32795
+      name: ws-agent-32795
+    - port: 32796
+      name: ws-agent-32796
+    - port: 32797
+      name: ws-agent-32797
+    - port: 32798
+      name: ws-agent-32798
+    - port: 32799
+      name: ws-agent-32799
+    - port: 32800
+      name: ws-agent-32800
+    - port: 32801
+      name: ws-agent-32801
+    - port: 32802
+      name: ws-agent-32802
+    - port: 32803
+      name: ws-agent-32803
+    - port: 32804
+      name: ws-agent-32804
+    - port: 32805
+      name: ws-agent-32805
+    - port: 32806
+      name: ws-agent-32806
+    - port: 32807
+      name: ws-agent-32807
+    - port: 32808
+      name: ws-agent-32808
+    - port: 32809
+      name: ws-agent-32809
       # ... 65535
   selector:
     name: che
