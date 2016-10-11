@@ -457,8 +457,6 @@ spec:
           volumeMounts:
             - name: lib-vol
               mountPath: /home/user/che/lib
-            - name: workspaces-vol
-              mountPath: /home/user/che/workspaces
             - name: storage-vol
               mountPath: /home/user/che/storage
             - name: docker-vol
