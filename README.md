@@ -10,10 +10,12 @@ Note: Currently alpha state; barely tested.
 Usage
 -----
 
+### Deployment
+
  1. You need a running [Kubernetes](http://kubernetes.io/) cluster (for example [Google Container Engine](https://cloud.google.com/container-engine/)).
  2. Edit `kubernetes.yml` and see the `TODO`; update with your values.
  3. Run `kubectl apply -f kubernetes.yml`
- 4. Set up your browser to use the SPDY proxy (see below).
+ 4. Follow client-side set up (see below).
 
 ### Client-side set up
 
