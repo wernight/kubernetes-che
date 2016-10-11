@@ -391,6 +391,9 @@ spec:
           env:
             - name: DOCKER_HOST
               value: tcp://localhost:2375
+            # TODO: You can set CHE_WORKSPACE_STORAGE to /home/user/che/storage
+            # so that /home/user/che/workspaces would be persisted under storage and
+            # you only have to persist a single directory.
           ports:
             - containerPort: 8080
           readinessProbe:
