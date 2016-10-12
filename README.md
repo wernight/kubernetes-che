@@ -20,7 +20,7 @@ Usage
 ### Client-side set up
 
 For **Chrome** install [SwitchyOmega](https://chrome.google.com/webstore/detail/proxy-switchyomega/padekgcemlokbadohgkifijomclgjgif).
-Then add a PAC Profile with PAC Script:
+Then add a PAC Profile with the [PAC Script](https://en.wikipedia.org/wiki/Proxy_auto-config) below:
 
     function FindProxyForURL(url, host) {
       if (dnsDomainIs(host, "che")) {
