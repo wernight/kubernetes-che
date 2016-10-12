@@ -430,6 +430,9 @@ spec:
               readOnly: true
         - name: docker-dind
           image: docker:dind
+          # TODO: You may add arg `--storage-driver=<DRIVER>` using the same driver as your host
+          # (which can be seen under `Storage Driver` in the output of `docker info`)
+          # for your Docker to be faster.
           imagePullPolicy: Always
           resources:
             requests:
