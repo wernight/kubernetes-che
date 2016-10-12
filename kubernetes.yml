@@ -457,6 +457,11 @@ spec:
           volumeMounts:
             - name: lib-vol
               mountPath: /home/user/che/lib
+              # Optional for Che, required if you want to mount workspace directories,
+              # like "docker run -v ..." from within a Che workspace.
+            - name: workspaces-vol
+              mountPath: /home/user/che/workspaces
+              # Required for SSH key to work for example.
             - name: storage-vol
               mountPath: /home/user/che/storage
             - name: docker-vol
