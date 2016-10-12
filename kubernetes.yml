@@ -393,9 +393,10 @@ spec:
           env:
             - name: DOCKER_HOST
               value: tcp://che:2375
-            # TODO: You can set CHE_WORKSPACE_STORAGE to /home/user/che/storage/workspaces
-            # so that /home/user/che/workspaces would be persisted under storage and
-            # you only have to persist a single directory.
+              # Asks workspaces to be persisted under storage so that
+              # only on directory is needed to persist Che data.
+            - name: CHE_WORKSPACE_STORAGE
+              value: /home/user/che/storage/workspaces
           ports:
             - containerPort: 8080
           readinessProbe:
@@ -421,8 +422,6 @@ spec:
           volumeMounts:
             - name: lib-vol
               mountPath: /home/user/che/lib-copy
-            - name: workspaces-vol
-              mountPath: /home/user/che/workspaces
             - name: storage-vol
               mountPath: /home/user/che/storage
               # Security hack, see https://github.com/kubernetes/kubernetes/issues/16779
@@ -457,11 +456,9 @@ spec:
           volumeMounts:
             - name: lib-vol
               mountPath: /home/user/che/lib
-              # Optional for Che, required if you want to mount workspace directories,
-              # like "docker run -v ..." from within a Che workspace.
-            - name: workspaces-vol
-              mountPath: /home/user/che/workspaces
-              # Required for SSH key to work for example.
+              # Mounting storage is required for SSH key to work for example.
+              # Mounting also workspaces is optional for Che but required if you want to mount
+              # workspace directories like "docker run -v $PWD:..." from within a Che workspace.
             - name: storage-vol
               mountPath: /home/user/che/storage
             - name: docker-vol
@@ -472,9 +469,6 @@ spec:
               readOnly: true
       volumes:
         - name: lib-vol
-          emptyDir: {}
-        - name: workspaces-vol
-          # TODO: You may want to use persistent disk instead.
           emptyDir: {}
         - name: storage-vol
           # TODO: You may want to use persistent disk instead.
