@@ -389,7 +389,8 @@ spec:
       containers:
           # https://eclipse-che.readme.io/docs/usage-docker
         - name: che-server
-          image: codenvy/che-server
+          # https://hub.docker.com/r/codenvy/che-server/tags/
+          image: codenvy/che-server:5.0.0-M6
           args:
             - --remote:che
             - -s:uid
