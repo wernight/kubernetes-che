@@ -21,6 +21,7 @@ kind: Deployment
 metadata:
   name: nginx-ingress-controller
 spec:
+  revisionHistoryLimit: 3
   replicas: 1
   template:
     metadata:
@@ -80,6 +81,7 @@ kind: Deployment
 metadata:
   name: kube-lego
 spec:
+  revisionHistoryLimit: 3
   replicas: 1
   template:
     metadata:
@@ -146,6 +148,7 @@ kind: Deployment
 metadata:
   name: default-http-backend
 spec:
+  revisionHistoryLimit: 3
   replicas: 1
   template:
     metadata:
@@ -217,6 +220,7 @@ kind: Deployment
 metadata:
   name: spdyproxy
 spec:
+  revisionHistoryLimit: 3
   replicas: 1
   # Pod template (contains same fields as a normal Pod)
   template:
@@ -371,6 +375,7 @@ kind: Deployment
 metadata:
   name: che
 spec:
+  revisionHistoryLimit: 3
   replicas: 1
   # Pod template (contains same fields as a normal Pod)
   template:
