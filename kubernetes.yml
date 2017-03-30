@@ -213,12 +213,12 @@ spec:
   ports:
     - port: 44300
   selector:
-    name: spdyproxy
+    app: che
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: spdyproxy
+  name: che
 spec:
   revisionHistoryLimit: 3
   replicas: 1
@@ -226,8 +226,11 @@ spec:
   template:
     metadata:
       labels:
-        name: spdyproxy
+        app: che
     spec:
+      # Resolve "che" to localhost on these containers.
+      hostname: che
+      terminationGracePeriodSeconds: 60
       containers:
         - name: spdyproxy
           image: wernight/spdyproxy
@@ -262,139 +265,14 @@ spec:
             - name: no-service-account
               mountPath: /var/run/secrets/kubernetes.io/serviceaccount
               readOnly: true
-      volumes:
-        - name: tls-vol
-          secret:
-            secretName: che-tls-certificate
-        - name: no-service-account
-          emptyDir: {}
----
-# TODO: Ideally we'd want to resolve "che" to the Pod directly which would about to list ports.
-apiVersion: v1
-kind: Service
-metadata:
-  name: che
-spec:
-  ports:
-    - port: 80
-      targetPort: 8080
-      name: http
-    - port: 2375
-      name: docker
-      # Hack workaround https://github.com/eclipse/che/issues/1560
-    - port: 32768
-      name: ws-agent-32768
-    - port: 32769
-      name: ws-agent-32769
-    - port: 32770
-      name: ws-agent-32770
-    - port: 32771
-      name: ws-agent-32771
-    - port: 32772
-      name: ws-agent-32772
-    - port: 32773
-      name: ws-agent-32773
-    - port: 32774
-      name: ws-agent-32774
-    - port: 32775
-      name: ws-agent-32775
-    - port: 32776
-      name: ws-agent-32776
-    - port: 32777
-      name: ws-agent-32777
-    - port: 32778
-      name: ws-agent-32778
-    - port: 32779
-      name: ws-agent-32779
-    - port: 32780
-      name: ws-agent-32780
-    - port: 32781
-      name: ws-agent-32781
-    - port: 32782
-      name: ws-agent-32782
-    - port: 32783
-      name: ws-agent-32783
-    - port: 32784
-      name: ws-agent-32784
-    - port: 32785
-      name: ws-agent-32785
-    - port: 32786
-      name: ws-agent-32786
-    - port: 32787
-      name: ws-agent-32787
-    - port: 32788
-      name: ws-agent-32788
-    - port: 32789
-      name: ws-agent-32789
-    - port: 32790
-      name: ws-agent-32790
-    - port: 32791
-      name: ws-agent-32791
-    - port: 32792
-      name: ws-agent-32792
-    - port: 32793
-      name: ws-agent-32793
-    - port: 32794
-      name: ws-agent-32794
-    - port: 32795
-      name: ws-agent-32795
-    - port: 32796
-      name: ws-agent-32796
-    - port: 32797
-      name: ws-agent-32797
-    - port: 32798
-      name: ws-agent-32798
-    - port: 32799
-      name: ws-agent-32799
-    - port: 32800
-      name: ws-agent-32800
-    - port: 32801
-      name: ws-agent-32801
-    - port: 32802
-      name: ws-agent-32802
-    - port: 32803
-      name: ws-agent-32803
-    - port: 32804
-      name: ws-agent-32804
-    - port: 32805
-      name: ws-agent-32805
-    - port: 32806
-      name: ws-agent-32806
-    - port: 32807
-      name: ws-agent-32807
-    - port: 32808
-      name: ws-agent-32808
-    - port: 32809
-      name: ws-agent-32809
-      # ... 65535
-  selector:
-    name: che
----
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  name: che
-spec:
-  revisionHistoryLimit: 3
-  replicas: 1
-  # Pod template (contains same fields as a normal Pod)
-  template:
-    metadata:
-      labels:
-        name: che
-    spec:
-      # Resolve "che" to localhost on these containers.
-      hostname: che
-      terminationGracePeriodSeconds: 60
-      containers:
           # https://eclipse-che.readme.io/docs/usage-docker
         - name: che-server
           # https://hub.docker.com/r/codenvy/che-server/tags/
           image: codenvy/che-server:5.0.0-M6
           args:
             - --remote:che
-            - -s:uid
-            - -s:client
+            - --skip:uid
+            - --skip:client
             - run
           env:
             - name: DOCKER_HOST
@@ -477,6 +355,9 @@ spec:
               mountPath: /var/run/secrets/kubernetes.io/serviceaccount
               readOnly: true
       volumes:
+        - name: tls-vol
+          secret:
+            secretName: che-tls-certificate
         - name: lib-vol
           emptyDir: {}
         - name: storage-vol

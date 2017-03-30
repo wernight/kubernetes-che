@@ -35,7 +35,7 @@ Click the lock to set username/password according to values you've set in `kuber
 
 Supposing you've set up your DNS to point to the Ingress Controller external IP
 (or actually to SPDY Proxy) and the SSL certificate of that host is trusted;
-you should now be able to connect to `http://che/`.
+you should now be able to connect to `http://che:8080/`.
 
 
 How it works
@@ -71,7 +71,4 @@ What could be improved
 ----------------------
 
  * Requires clients to setup and use that SPDY Proxy (at least until [eclipse/che#1560](https://github.com/eclipse/che/issues/1560) is fixed)
- * Currently only [**listing some ports**](https://github.com/wernight/kubernetes-che/blob/master/kubernetes.yml#L285-L369): All ports in range 32768-65535 should point to the Pod running `docker:dind`.
-   One way would be to delete the `che` Service, and instead of using a Deployment, directly create a Pod
-   named `che` (but I don't like that idea). Another idea is just to wait for issue [eclipse/che#1560](https://github.com/eclipse/che/issues/1560). If needed, one can update `/proc/sys/net/ipv4/ip_local_port_range` to limit the port range, see [docker/docker#13322](https://github.com/docker/docker/issues/13322).
  * Long lived HTTP requests like the terminal, or possibly other parts, seem to disconnect after a while if there was no I/O. Not tested which part is responsible for this issue.
