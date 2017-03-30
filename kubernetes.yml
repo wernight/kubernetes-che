@@ -283,15 +283,20 @@ spec:
               value: /home/user/che/storage/workspaces
           ports:
             - containerPort: 8080
-          readinessProbe:
-            httpGet:
-              path: /dashboard/
-              port: 8080
-          livenessProbe:
-            httpGet:
-              path: /dashboard/
-              port: 8080
-            initialDelaySeconds: 60
+          # Seems to be too aggressive as Che sometimes doesn't reply fast enough
+          # so disabling by default, enable and adjust if desired.
+          # See also https://github.com/eclipse/che/issues/2761
+          #readinessProbe:
+          #  httpGet:
+          #    path: /dashboard/
+          #    port: 8080
+          #  periodSeconds: 10
+          #livenessProbe:
+          #  httpGet:
+          #    path: /dashboard/
+          #    port: 8080
+          #  initialDelaySeconds: 60
+          #  periodSeconds: 20
           lifecycle:
             preStop:
               exec:
