@@ -267,8 +267,8 @@ spec:
               readOnly: true
           # https://eclipse-che.readme.io/docs/usage-docker
         - name: che-server
-          # https://hub.docker.com/r/codenvy/che-server/tags/
-          image: codenvy/che-server:5.0.0-M6
+          # https://hub.docker.com/r/eclipse/che-server/tags/
+          image: eclipse/che-server:5.6.0
           args:
             - --remote:che
             - --skip:uid
