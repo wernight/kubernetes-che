@@ -281,6 +281,19 @@ spec:
               # only on directory is needed to persist Che data.
             - name: CHE_WORKSPACE_STORAGE
               value: /home/user/che/storage/workspaces
+              # Uncomment to give access to a Google Container Registry
+              # See http://stackoverflow.com/a/43140504/167897 to see
+              # we cnnot use the UI because GCE passwords are too long
+              # See https://github.com/codenvy/codenvy/issues/1948
+            #- name: CHE_DOCKER_REGISTRY_AUTH_REGISTRY1_URL
+            #  value: gcr.io
+            #- name: CHE_DOCKER_REGISTRY_AUTH_REGISTRY1_USERNAME
+            #  value: _json_key
+            #- name: CHE_DOCKER_REGISTRY_AUTH_REGISTRY1_PASSWORD
+            #  valueFrom:
+            #    secretKeyRef:
+            #      name: container-registry-account
+            #      key: password
           ports:
             - containerPort: 8080
           # Seems to be too aggressive as Che sometimes doesn't reply fast enough
