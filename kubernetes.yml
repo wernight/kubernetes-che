@@ -229,6 +229,9 @@ spec:
         app: che
     spec:
       # Resolve "che" to localhost on these containers.
+      # This is so that trying to access http://che/ through speedy will
+      # let SPDY point to localhost, and that way all ports opened by
+      # Docker:DinD will also be accessible, e.g. http://che:32650.
       hostname: che
       terminationGracePeriodSeconds: 60
       containers:
@@ -265,22 +268,21 @@ spec:
             - name: no-service-account
               mountPath: /var/run/secrets/kubernetes.io/serviceaccount
               readOnly: true
-          # https://eclipse-che.readme.io/docs/usage-docker
         - name: che-server
-          # https://hub.docker.com/r/eclipse/che-server/tags/
-          image: eclipse/che-server:5.6.0
-          args:
-            - --remote:che
-            - --skip:uid
-            - --skip:client
-            - run
+          # See documentation on https://eclipse.org/che/docs/setup/docker/index.html
+          # Latest tags: https://hub.docker.com/r/eclipse/che-server/tags/
+          image: eclipse/che-server:5.7.0
           env:
+            - name: CHE_IP
+              value: che  # External hostname.
+            - name: CHE_PORT
+              value: "80"
             - name: DOCKER_HOST
               value: tcp://che:2375
               # Asks workspaces to be persisted under storage so that
               # only on directory is needed to persist Che data.
             - name: CHE_WORKSPACE_STORAGE
-              value: /home/user/che/storage/workspaces
+              value: /projects
               # Uncomment to give access to a Google Container Registry
               # See http://stackoverflow.com/a/43140504/167897 to see
               # we cnnot use the UI because GCE passwords are too long
@@ -295,21 +297,21 @@ spec:
             #      name: container-registry-account
             #      key: password
           ports:
-            - containerPort: 8080
-          # Seems to be too aggressive as Che sometimes doesn't reply fast enough
-          # so disabling by default, enable and adjust if desired.
+            - containerPort: 80
+          readinessProbe:
+            tcpSocket:
+              port: 80
           # See also https://github.com/eclipse/che/issues/2761
-          #readinessProbe:
           #  httpGet:
           #    path: /dashboard/
-          #    port: 8080
-          #  periodSeconds: 10
-          #livenessProbe:
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 80
           #  httpGet:
           #    path: /dashboard/
-          #    port: 8080
-          #  initialDelaySeconds: 60
-          #  periodSeconds: 20
+            initialDelaySeconds: 60
+            periodSeconds: 30
           lifecycle:
             preStop:
               exec:

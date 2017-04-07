@@ -35,7 +35,7 @@ Click the lock to set username/password according to values you've set in `kuber
 
 Supposing you've set up your DNS to point to the Ingress Controller external IP
 (or actually to SPDY Proxy) and the SSL certificate of that host is trusted;
-you should now be able to connect to `http://che:8080/`.
+you should now be able to connect to `http://che/`.
 
 
 How it works
